@@ -19,10 +19,11 @@ class AutocompleteCombobox(ttk.Combobox):
 
     def set_completion_list(self, completion_list):
         self.completion_list = completion_list
+        self["values"] = self.completion_list
 
     def autocomplete(self, event):
         current_text = self.current_text.get()
-        if current_text == "":
+        if current_text =="":
             self.configure(values=self.completion_list)
         else:
             matching_options = [
@@ -85,7 +86,7 @@ class Application(Funcs):
 
     def tela(self):
         self.root.title("Cadastro de Clientes")
-        self.root.configure(background= '#474544')
+        self.root.configure(background='#474544')
         self.root.geometry("800x500")
         self.root.resizable(True, True)
         self.root.maxsize(width= 900, height= 700)
@@ -98,12 +99,13 @@ class Application(Funcs):
         self.frame_2 = tk.Frame(self.root, bd=4, bg='#363636', highlightbackground='black', highlightthickness=3)
         self.frame_2.place(relx=0.02, rely=0.5, relwidth=0.96, relheight=0.46)
 
-    def widgets_frame1(self):
-        self.combobox = AutocompleteCombobox(self.frame_1)
-        self.combobox.set_completion_list(sorted([str(fornecedor) for fornecedor in set(self.table["Fornecedor"])]))
-        self.combobox.set("Brasil Atacadista")
-        self.combobox.place(relx=0.1, rely=0.1, relwidth=0.2, relheight=0.2)
-        #self.combobox.config(bg="#282c34", fg="#ffffff", activebackground="#282c34", activeforeground="#ffffff", bd=1, highlightthickness=1, width=20, height=10)
+    def widgets_frame1(self):   
+        self.label_fornecedor = tk.Label(self.frame_1, text="Fornecedor:", bg="#363636", fg="white")   
+        self.label_fornecedor.place(relx=0.03, rely=0.06)
+
+        self.fornecedor_select = AutocompleteCombobox(self.frame_1)
+        self.fornecedor_select.set_completion_list(sorted([str(fornecedor) for fornecedor in set(self.table["Fornecedor"])]))
+        self.fornecedor_select.place(relx=0.03, rely=0.15, relwidth=0.22, relheight=0.12)
 
     def lista_frame2(self):
         self.listaCli = ttk.Treeview(self.frame_2, style="Treeview", height=3)
@@ -166,5 +168,18 @@ class Application(Funcs):
                         lightcolor="#282c34",
                         troughrelief="flat",
                         gripmargin=0)
+          
+        # Cria um estilo personalizado para o combobox       
+        combostyle = ttk.Style()
+        combostyle.theme_create('combostyle', parent='alt',
+                                settings={'TCombobox':
+                                        {'configure':
+                                        {'selectbackground': 'gray',
+                                            'fieldbackground': '#474544',
+                                            'background': '#474544',
+                                            'foreground':'white'
+                                            }}})
 
+        # Usa o estilo criado
+        combostyle.theme_use('combostyle')
 Application()
