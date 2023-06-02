@@ -1,9 +1,7 @@
 import locale
-import tkinter as tk
-from tkinter import *
-from tkinter import ttk
-from tkinter import messagebox
 import pandas as pd
+import tkinter as tk
+from tkinter import ttk
 from datetime import datetime
 
 # Configurar a localidade para o formato de moeda brasileira
@@ -11,15 +9,36 @@ locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
 root = tk.Tk()
 
+class AutocompleteCombobox(ttk.Combobox):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.completion_list = []
+        self.current_text = tk.StringVar()
+        self.configure(textvariable=self.current_text)
+        self.bind("<KeyRelease>", self.autocomplete)
+
+    def set_completion_list(self, completion_list):
+        self.completion_list = completion_list
+
+    def autocomplete(self, event):
+        current_text = self.current_text.get()
+        if current_text == "":
+            self.configure(values=self.completion_list)
+        else:
+            matching_options = [
+                option for option in self.completion_list if option.lower().startswith(current_text.lower())
+            ]
+            self.configure(values=matching_options)
+
 class Funcs():
-    def __init__(self) -> None:
+    def __init__(self):
         self.conexao()
 
     def limpa_cliente(self):
-        self.codigo_entry.delete(0, END)
-        self.cidade_entry.delete(0, END)
-        self.fone_entry.delete(0, END)
-        self.nome_entry.delete(0, END)
+        self.codigo_entry.delete(0, tk.END)
+        self.cidade_entry.delete(0, tk.END)
+        self.fone_entry.delete(0, tk.END)
+        self.nome_entry.delete(0, tk.END)
 
     def variaveis(self):
         self.codigo = self.codigo_entry.get()
@@ -32,7 +51,7 @@ class Funcs():
 
         data_fim = datetime.strptime("2023-06-01", "%Y-%m-%d").date()
         data_inicio = datetime.strptime("2023-05-01", "%Y-%m-%d").date()
-        colunas_desejadas = ["Local", "Data Da Compra", "Descrição", "Qtd", "Valor Unitario", "Valor Total", "Quem Paga"]
+        colunas_desejadas = ["Fornecedor", "Data Da Compra", "Descrição", "Qtd", "Valor Unitario", "Valor Total", "Quem Paga"]
         
         self.table["Data Da Compra"] = pd.to_datetime(self.table["Data Da Compra"]).dt.date
 
@@ -47,18 +66,19 @@ class Funcs():
             values[3] = int(values[3])  
             values[4] = locale.currency(values[4], grouping=True) 
             values[5] = locale.currency(values[5], grouping=True) 
-            self.listaCli.insert("", END, values=values)
+            self.listaCli.insert("", tk.END, values=values)
        
     def conexao(self):
-        self.table = pd.read_excel(r"C:\Users\Andrey\Desktop\Projeto\Gerenciador.xlsx", sheet_name="Compras")
+        self.table = pd.read_excel(r"C:\Users\Andrey\Desktop\Mercado\Mercado.xlsx", sheet_name="Compras")
     
 class Application(Funcs):
     def __init__(self):
+        super().__init__()
         self.root = root
-        
         self.tela()
-        self.frames_da_tela()
         self.load_styles()
+        self.frames_da_tela()
+        self.widgets_frame1()
         self.lista_frame2()
         self.select_lista()
         self.root.mainloop()
@@ -72,18 +92,23 @@ class Application(Funcs):
         self.root.minsize(width=500, height= 400)
 
     def frames_da_tela(self):
-        self.frame_1 = Frame(self.root, bd = 4, bg= '#dfe3ee',
-                             highlightbackground= 'black', highlightthickness=3 )
+        self.frame_1 = tk.Frame(self.root, bd = 4, bg= '#363636', highlightbackground= 'black', highlightthickness=3 )
         self.frame_1.place(relx= 0.02, rely=0.02, relwidth= 0.96, relheight= 0.46)
 
-        self.frame_2 = Frame(self.root, bd=4, bg='#dfe3ee',
-                             highlightbackground='black', highlightthickness=3)
+        self.frame_2 = tk.Frame(self.root, bd=4, bg='#363636', highlightbackground='black', highlightthickness=3)
         self.frame_2.place(relx=0.02, rely=0.5, relwidth=0.96, relheight=0.46)
+
+    def widgets_frame1(self):
+        self.combobox = AutocompleteCombobox(self.frame_1)
+        self.combobox.set_completion_list(sorted([str(fornecedor) for fornecedor in set(self.table["Fornecedor"])]))
+        self.combobox.set("Brasil Atacadista")
+        self.combobox.place(relx=0.1, rely=0.1, relwidth=0.2, relheight=0.2)
+        #self.combobox.config(bg="#282c34", fg="#ffffff", activebackground="#282c34", activeforeground="#ffffff", bd=1, highlightthickness=1, width=20, height=10)
 
     def lista_frame2(self):
         self.listaCli = ttk.Treeview(self.frame_2, style="Treeview", height=3)
-        self.listaCli["columns"] = [ "Local", "Data Da Compra", "Descrição", "Qtd", "Valor Unitário", "Valor Total", "Quem Paga"]
-        self.listaCli.heading("Local"         , text="Local"         )
+        self.listaCli["columns"] = [ "Fornecedor", "Data Da Compra", "Descrição", "Qtd", "Valor Unitário", "Valor Total", "Quem Paga"]
+        self.listaCli.heading("Fornecedor"    , text="Fornecedor"         )
         self.listaCli.heading("Data Da Compra", text="Data Da Compra")
         self.listaCli.heading("Descrição"     , text="Descrição"     )
         self.listaCli.heading("Qtd"           , text="Qtd"           )
@@ -92,7 +117,7 @@ class Application(Funcs):
         self.listaCli.heading("Quem Paga"     , text="Quem Paga"     )
 
         self.listaCli.column("#0"            , width=0  , stretch=tk.NO   )
-        self.listaCli.column("Local"         , width=75 , anchor=tk.CENTER)
+        self.listaCli.column("Fornecedor"    , width=75 , anchor=tk.CENTER)
         self.listaCli.column("Data Da Compra", width=70 , anchor=tk.CENTER)
         self.listaCli.column("Descrição"     , width=200, anchor=tk.CENTER)
         self.listaCli.column("Qtd"           , width=30 , anchor=tk.CENTER)
@@ -103,7 +128,8 @@ class Application(Funcs):
         self.listaCli.place(relx=0.01, rely=0.03, relwidth=0.95, relheight=0.95)
 
         self.scroolLista = ttk.Scrollbar(self.frame_2, orient='vertical', style="Custom.Vertical.TScrollbar")
-        self.listaCli.configure(yscroll=self.scroolLista.set)
+        self.scroolLista.configure(command=self.listaCli.yview)
+        self.listaCli.configure(yscrollcommand=self.scroolLista.set)
         self.scroolLista.place(relx=0.96, rely=0.03, relwidth=0.04, relheight=0.95)
 
     def load_styles(self):
