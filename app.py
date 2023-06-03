@@ -82,6 +82,34 @@ class Funcs():
             self.table.to_excel(self.local, sheet_name=self.sheet, index=False)
             self.select_lista()
 
+    def alterar_registro(self):
+        selection = self.treview_compras.selection()
+        if False:
+            item_id = selection[0]
+            item_data = self.treview_compras.item(item_id)
+            row_data = item_data['values']
+            fornecedor = row_data[0]
+            data_compra = datetime.strptime(row_data[1], "%d/%m/%Y").date()
+            descricao = row_data[2]
+            qtd = int(row_data[3])
+            valor_unitario = float(row_data[4].replace('R$', '').replace('.', '').replace(',', '.'))
+            valor_total = float(row_data[5].replace('R$', '').replace('.', '').replace(',', '.'))
+            quem_paga = row_data[6]
+
+            # Realize as alterações necessárias nos valores do registro
+            # Depois, salve o DataFrame atualizado no arquivo Excel novamente
+            self.table.loc[(self.table['Fornecedor'] == fornecedor) &
+                        (self.table['Data Da Compra'] == data_compra) &
+                        (self.table['Descrição'] == descricao) &
+                        (self.table['Qtd'] == qtd) &
+                        (self.table['Valor Unitario'] == valor_unitario) &
+                        (self.table['Valor Total'] == valor_total) &
+                        (self.table['Quem Paga'] == quem_paga), 'Nova Coluna'] = 'Novo Valor'
+
+            self.table.to_excel(self.local, sheet_name=self.sheet, index=False)
+            self.select_lista()
+
+
     def limpa_cliente(self):
         self.codigo_entry.delete(0, tk.END)
         self.cidade_entry.delete(0, tk.END)
@@ -200,7 +228,7 @@ class Application(Funcs):
         self.button_adicionar = ttk.Button(self.frame_1, style="TButton",text="Adicionar", command=self.adicionar_registro)
         self.button_adicionar.place(relx=0.03, rely=0.85, relwidth=0.10, relheight=0.13)
 
-        self.button_alterar = ttk.Button(self.frame_1, style="TButton",text="Alterar", command=self.adicionar_registro)
+        self.button_alterar = ttk.Button(self.frame_1, style="TButton",text="Alterar", command=self.alterar_registro)
         self.button_alterar.place(relx=0.14, rely=0.85, relwidth=0.10, relheight=0.13)
 
         self.button_excluir = ttk.Button(self.frame_1, style="TButton",text="Excluir", command=self.excluir_registro)
