@@ -31,7 +31,7 @@ class AutocompleteCombobox(ttk.Combobox):
 
 class Funcs():
     def __init__(self):
-        self.local = r"C:\Users\Andrey\Desktop\Mercado\Mercado.xlsx"
+        self.local = r"Mercado.xlsx"
         self.sheet = "Compras"
         self.conexao()
         locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8') # Configurar a localidade para o formato de moeda brasileira
